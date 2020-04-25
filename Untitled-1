@@ -1,0 +1,75 @@
+controller = NEW_VC_FROM_STORYBOARD(kMainMobileStoryboardName, [iScreenerViewController storyboardID]) ;
+
+ if(controller){
+            [AppDelegateAccessor openNewContent:controller atType:type];
+        }
+
+
+    [GlobalVariables sharedVariables].theScreenerLink = [NSString stringWithFormat:@"%@/IndividualStockDetail.html?region=%@&market=%@&symbol=%@&",[AppConfigManager getScreenerURL],BUILD_TARGET_SCREENER==0?@"SG":@"MY",trade_exchg_code,self.strip_stock_code];
+
+
+V2
+    https://ken.nifi-is1.com/m-cimb/IndividualStockDetail.html?region=SG&market=SG&symbol=5DM&region=SG&id=B66933&lang=en&token=pKeBzFfrx%2FlqgLqlNUfvQ265qJZnyBqMosg8K2eSFJU%3D
+    https://ken.nifi-is1.com/m-cimb/IndividualStockDetail.html?region=SG&market=SG&symbol=5DM&region=SG&id=B66933&lang=en&token=pKeBzFfrx/lqgLqlNUfvQzfPSbxCJUN+pQ93eR+ng3w=
+
+
+https://ken.nifi-is1.com/m-cimb/IndividualStockDetail.html?region=SG&market=SG&symbol=BTJ&region=SG&id=B66933&lang=en&token=dfVzgguxvEf4p6Hk2K5QZ7dEBmK6u2jV3ciawwijNBw%3D#page4
+https://ken.nifi-is1.com/m-cimb/IndividualStockDetail.html?region=SG&market=(null)&symbol=BTJ&region=SG&id=A86264&lang=en&token=sbvINyYqdK0SilmEC3MzngJ626leedKVWHM+IPNyISY=
+
+
+
+vertDetailOneStock
+
+pressed itradecimbwatchlistbuttonclicked:/stockcode:QFIN/exchange:US
+2020-04-20 18:14:35.274703+0800 TC_Mobile30[28100:472106] -[iScreenerViewController webView:decidePolicyForNavigationAction:decisionHandler:] [Line 138] hassan link pressed itradecimbtradebuttonclicked:/stockcode:QFIN/exchange:US
+
+
+//Add favorite here
+			SelectWatchlistPopupVC *_selectVC = NEW_VC_FROM_NIB([SelectWatchlistPopupVC class], [SelectWatchlistPopupVC nibName]);
+			_selectVC.stock = selectedStock;
+			_selectVC.delegate = self;
+			[self showPopupWithContent:_selectVC inSize:CGSizeMake(0.8 * SCREEN_WIDTH_PORTRAIT, 0.4 * SCREEN_HEIGHT_PORTRAIT) completion:^(MZFormSheetController *formSheetController) {
+				
+			}];
+
+
+- (void)didSelectStock:(StockModel *)stock willAddToWatchlist:(WatchlistModel*)watchlist{
+    NSInteger watchlistID=watchlist.FavID;
+    NSString* watchlistName=watchlist.Name;
+	//Call api to add watchlist now
+	[[ATPAuthenticate singleton] addStock:stock.stockCode toWatchlist:(int)watchlistID completion:^(BOOL success, id result, NSError *error) {
+		if (success) {
+			NSString *someDuplicate = [result objectForKey:@"DuplicateStocks"];
+			if ([someDuplicate length]>0) {
+				[self showCustomAlertWithMessage:[LanguageManager stringForKey:@"warning_duplicate_stock_symbol" withPlaceholders:@{@"%duplicatedSymbol%":watchlistName}]];
+			}else{
+				//Success
+				[self postNotification:kDidFinishAddStockToWatchlistNotification object:nil];
+                [self showCustomAlertWithMessage:[LanguageManager stringForKey:@"Stock has been successfully added!"]];
+			}
+		}else{
+			if (error) {
+                [self showCustomAlertWithMessage:error.localizedDescription];
+			}
+		}
+	}];
+
+
+
+
+
+
+
+
+    [UserPrefConstants singleton].userSelectingThisStock = selectedStock;
+            MTradeViewController* controller = NEW_VC_FROM_STORYBOARD(kTradeStoryboard, [MTradeViewController storyboardID]);
+            controller.tradeType = TradeType_Buy;
+            controller.actionTypeDict = @{};
+            BaseNavigationController *navController = [[BaseNavigationController alloc] initWithRootViewController:controller];
+            
+            [AppDelegateAccessor.container presentFullScreenViewController:navController animated:YES completion:^{
+            }];
+}
+
+
+

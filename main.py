@@ -97,8 +97,7 @@ def decode_jwt():
         abort(401)
 
 #Hello I'm Hassan jamila
-#Hello World
-#Hello World
+#new udacity5
     response = {'email': data['email'],
                 'exp': data['exp'],
                 'nbf': data['nbf'] }
